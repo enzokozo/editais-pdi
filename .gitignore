@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environment
+.venv/
+
+# Test and tool caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Data: downloaded calls, extracted text, generated outputs
+data/
+*.pdf
+*.xlsx
+*.xls
+!gold/*.xlsx
+
+# Local models
+*.gguf
+*.bin
+*.safetensors
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Secrets
+.env

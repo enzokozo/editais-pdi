@@ -1,0 +1,6 @@
+﻿ID_edital,id_anexo,arquivo_json,motivo,versoes_anteriores_id_anexo,confianca
+FAPEMIG-195,2621,5ec1e8fb20e8028c.json,unico PDF longo do registro (104 pags),,alta
+FAPEMIG-193,2702,ae54791a47aeb8cf.json,unico PDF longo (49 pags); 4 Decisoes Administrativas sao acessorias,,alta
+FAPEMIG-192,1932,f436735c342a1fb3.json,unico PDF longo (29 pags),,alta
+FAPEMIG-116,845,be050769285b4174.json,versao mais recente: rodape SEI 16/03/2022 (828=19/05/2021; 842=03/12/2021),828;842,alta (data no documento); mudancas de conteudo ainda nao medidas
+FAPEMIG-132,929,0d1be96c69dcbdc9.json,contem datas da retificacao 4 (927) e altera parcelas do Termo de Outorga (3->2); sem rodape SEI: ordem inferida por conteudo e nome 'set-2020',916;919=921;924;927,media (inferencia por conteudo)
