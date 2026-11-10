@@ -85,3 +85,13 @@ def test_save_json_includes_issues(tmp_path):
     ext = extraction(L1="50.00", L3="100.00")
     out = save_json(ext, check_consistency(ext), tmp_path)
     assert '"issues"' in out.read_text(encoding="utf-8")
+
+
+def test_review_sheet_keeps_calls_not_in_this_run(tmp_path):
+    path = tmp_path / "revisao.xlsx"
+    a = extraction(L1="1000.00")
+    b = extraction(L1="5.00").model_copy(update={"edital_id": "TEST-2"})
+    write_review_sheet(review_rows(a, []) + review_rows(b, []), path)
+    write_review_sheet(review_rows(a, []), path)      # second run processes only TEST-1
+    ids = {r[0] for r in load_workbook(path)[SHEET].iter_rows(min_row=2, values_only=True)}
+    assert ids == {"TEST-1", "TEST-2"}
