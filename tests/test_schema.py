@@ -12,7 +12,7 @@ def test_catalog_has_18_fields_in_5_groups():
 
 
 def test_extracted_record_is_valid():
-    r = FieldRecord(field_id="P2", status="extraido", value="17h do dia 15 de marco de 2026",
+    r = FieldRecord(field_id="P2", status="extraido", value=["17h do dia 15 de marco de 2026"],
                     evidence=EV, method="llm")
     assert r.status == Status.EXTRAIDO
 
@@ -41,7 +41,7 @@ def test_multivalued_field_requires_list():
 
 def test_single_field_rejects_list():
     with pytest.raises(ValidationError):
-        FieldRecord(field_id="P2", status="extraido", value=["a", "b"], evidence=EV)
+        FieldRecord(field_id="P4", status="extraido", value=["a", "b"], evidence=EV)
 
 
 def test_uncertain_may_keep_value_for_review():
