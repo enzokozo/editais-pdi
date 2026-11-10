@@ -81,23 +81,22 @@ def review_rows(ext: EditalExtraction, issues: list[Issue]) -> list[dict]:
     return rows
 
 
-def _previous_decisions(path: Path) -> dict:
-    """(ID_edital, Campo) -> reviewer columns + the value they reviewed."""
+def _previous_rows(path: Path) -> list[dict]:
     if not path.exists():
-        return {}
+        return []
     ws = load_workbook(path)[SHEET]
     head = [c.value for c in ws[1]]
-    out = {}
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        r = dict(zip(head, row))
-        if any(r.get(c) for c in REVIEWER_COLUMNS):
-            out[(r["ID_edital"], r["Campo"])] = r
-    return out
+    return [dict(zip(head, row)) for row in ws.iter_rows(min_row=2, values_only=True) if row[0]]
 
 
 def write_review_sheet(rows: list[dict], path: Path) -> Path | None:
-    """Write the review sheet, keeping earlier decisions. Returns the backup path, if any."""
-    previous = _previous_decisions(path)
+    """Write the review sheet, keeping earlier decisions and the rows of calls not in `rows`.
+    Returns the backup path, if any."""
+    old_rows = _previous_rows(path)
+    current_calls = {r["ID_edital"] for r in rows}
+    kept = [r for r in old_rows if r["ID_edital"] not in current_calls]
+    previous = {(r["ID_edital"], r["Campo"]): r for r in old_rows
+                if any(r.get(c) for c in REVIEWER_COLUMNS)}
     backup = None
     if path.exists():
         backup = path.parent / "backups" / f"{path.stem}_{datetime.now():%Y%m%dT%H%M%S}{path.suffix}"
@@ -120,7 +119,7 @@ def write_review_sheet(rows: list[dict], path: Path) -> Path | None:
     ws = wb.active
     ws.title = SHEET
     ws.append(COLUMNS)
-    for row in rows:
+    for row in sorted(kept + rows, key=lambda r: (r["ID_edital"], list(FIELDS).index(r["Campo"]))):
         ws.append([row.get(c) for c in COLUMNS])
 
     header_fill = PatternFill("solid", fgColor="DDEBF7")

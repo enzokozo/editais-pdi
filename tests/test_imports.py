@@ -20,6 +20,7 @@ MODULES = [
     "editais.rules",
     "editais.corpus",
     "editais.consolidation",
+    "editais.pipeline",
 ]
 
 
