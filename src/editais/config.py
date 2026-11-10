@@ -10,3 +10,6 @@ MAIN_DOCS_CSV = PROJECT_ROOT / "documentos_principais.csv"
 # Identifies the crawler without exposing personal data (decision D29).
 USER_AGENT = "editais-pdi/0.1 (+https://github.com/enzokozo/editais-pdi)"
 REQUEST_DELAY_SECONDS = 1.5
+
+# Local Ollama server (default port).
+OLLAMA_URL = "http://localhost:11434"
