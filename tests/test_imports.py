@@ -14,6 +14,9 @@ MODULES = [
     "editais.structure",
     "editais.topics",
     "editais.excel_writer",
+    "editais.llm",
+    "editais.schema",
+    "editais.evidence",
 ]
 
 
