@@ -13,3 +13,8 @@ REQUEST_DELAY_SECONDS = 1.5
 
 # Local Ollama server (default port).
 OLLAMA_URL = "http://localhost:11434"
+
+# LLM call settings (decision D22). The model is chosen in step 9; Q8 is the default until then.
+DEFAULT_MODEL = "qwen3.5:2b"
+NUM_CTX = 4096
+SEED = 42
