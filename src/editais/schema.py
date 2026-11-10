@@ -25,6 +25,7 @@ Kind = Literal["date", "datetime", "months", "days", "money", "percent_or_money"
 
 @dataclass(frozen=True)
 class FieldSpec:
+    # P1-P3 are lists: calls with several entries or phases have one date per entry (D40).
     id: str
     name: str
     group: str          # P, L, T, I, E: one LLM call per group
@@ -34,8 +35,8 @@ class FieldSpec:
 
 FIELDS: dict[str, FieldSpec] = {f.id: f for f in [
     FieldSpec("P1", "inicio_submissao", "P", "date", multivalued=True),
-    FieldSpec("P2", "fim_submissao", "P", "datetime"),
-    FieldSpec("P3", "resultado_preliminar", "P", "date"),
+    FieldSpec("P2", "fim_submissao", "P", "datetime", multivalued=True),
+    FieldSpec("P3", "resultado_preliminar", "P", "date", multivalued=True),
     FieldSpec("P4", "prazo_execucao_projeto", "P", "months"),
     FieldSpec("L1", "valor_global", "L", "money"),
     FieldSpec("L2", "valor_min_proposta", "L", "money"),
