@@ -19,6 +19,7 @@ MODULES = [
     "editais.evidence",
     "editais.rules",
     "editais.corpus",
+    "editais.consolidation",
 ]
 
 
