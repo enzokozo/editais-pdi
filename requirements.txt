@@ -1,3 +1,4 @@
 requests==2.34.2
 pymupdf==2.1
 openpyxl==3.1.5
+crewai[litellm]==1.15.39
