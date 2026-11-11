@@ -39,7 +39,7 @@ def test_payload_fixes_decoding_parameters():
     assert payload["think"] is False
     assert payload["stream"] is False
     assert payload["options"] == {"temperature": 0, "seed": 42, "num_ctx": 4096}
-    assert payload["format"] == Answer.model_json_schema()
+    assert payload["format"] == llm.inline_refs(Answer.model_json_schema())
     assert [m["role"] for m in payload["messages"]] == ["system", "user"]
 
 
@@ -72,3 +72,25 @@ def test_value_outside_schema_raises(monkeypatch):
 def test_flags_prompt_near_context_limit(monkeypatch):
     fake_ollama(monkeypatch, '{"status": "nao_informado", "valor": null}', prompt_eval_count=4090)
     assert llm.ask_json("p", Answer).near_ctx_limit is True
+
+
+def test_server_down_raises_clear_error(monkeypatch):
+    def refuse(url, json, timeout):
+        raise llm.requests.ConnectionError("connection refused")
+
+    monkeypatch.setattr(llm.requests, "post", refuse)
+    with pytest.raises(llm.OllamaUnavailable, match="ollama serve"):
+        llm.ask_json("p", Answer)
+
+
+def test_inline_refs_removes_defs():
+    class Inner(BaseModel):
+        x: int
+
+    class Outer(BaseModel):
+        a: Inner
+        b: list[Inner]
+
+    flat = llm.inline_refs(Outer.model_json_schema())
+    assert "$defs" not in flat and "$ref" not in str(flat)
+    assert flat["properties"]["a"]["properties"]["x"]["type"] == "integer"

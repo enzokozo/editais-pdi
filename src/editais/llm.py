@@ -17,6 +17,10 @@ class LLMError(Exception):
     """The model answered, but not with valid data for the requested schema."""
 
 
+class OllamaUnavailable(Exception):
+    """The Ollama server is not running or not reachable."""
+
+
 @dataclass
 class LLMResult:
     data: BaseModel          # validated answer
@@ -27,6 +31,24 @@ class LLMResult:
     near_ctx_limit: bool     # True if the prompt may have been truncated
 
 
+def inline_refs(schema: dict) -> dict:
+    """Replace every {"$ref": "#/$defs/X"} by the definition itself and drop "$defs".
+    Nested Pydantic models produce $ref; a flat schema is the safest input for Ollama's
+    grammar-constrained decoding."""
+    defs = schema.get("$defs", {})
+
+    def resolve(node):
+        if isinstance(node, dict):
+            if "$ref" in node:
+                return resolve(defs[node["$ref"].split("/")[-1]])
+            return {k: resolve(v) for k, v in node.items() if k != "$defs"}
+        if isinstance(node, list):
+            return [resolve(x) for x in node]
+        return node
+
+    return resolve(schema)
+
+
 def build_payload(prompt: str, schema: type[BaseModel], model: str,
                   system: str | None, num_ctx: int) -> dict:
     messages = [{"role": "system", "content": system}] if system else []
@@ -34,7 +56,7 @@ def build_payload(prompt: str, schema: type[BaseModel], model: str,
     return {
         "model": model,
         "messages": messages,
-        "format": schema.model_json_schema(),
+        "format": inline_refs(schema.model_json_schema()),
         "stream": False,
         "think": False,
         "options": {"temperature": 0, "seed": SEED, "num_ctx": num_ctx},
@@ -46,10 +68,15 @@ def ask_json(prompt: str, schema: type[BaseModel], *, model: str = DEFAULT_MODEL
     """Send one prompt and return the answer validated against `schema`.
 
     Raises LLMError if the answer is not valid JSON for the schema, and
-    requests.RequestException if Ollama cannot be reached.
+    OllamaUnavailable if the Ollama server cannot be reached.
     """
     payload = build_payload(prompt, schema, model, system, num_ctx)
-    r = requests.post(f"{OLLAMA_URL}/api/chat", json=payload, timeout=timeout)
+    try:
+        r = requests.post(f"{OLLAMA_URL}/api/chat", json=payload, timeout=timeout)
+    except requests.ConnectionError as e:
+        raise OllamaUnavailable(
+            f"Ollama is not reachable at {OLLAMA_URL}. Open the Ollama app or run `ollama serve`."
+        ) from e
     r.raise_for_status()
     body = r.json()
     raw = body.get("message", {}).get("content", "")
