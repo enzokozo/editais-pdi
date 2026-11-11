@@ -21,6 +21,7 @@ MODULES = [
     "editais.corpus",
     "editais.consolidation",
     "editais.pipeline",
+    "editais.llm_extraction",
 ]
 
 

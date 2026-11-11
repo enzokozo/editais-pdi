@@ -24,7 +24,7 @@ def fake_corpus(monkeypatch, tmp_path):
 
 
 def test_flow_runs_three_agents_in_order(fake_corpus):
-    [state] = pipeline.run(["TEST-1"])
+    [state] = pipeline.run(["TEST-1"], mode="rules")
     assert state.error is None
     assert list(state.timings) == ["scan", "extract", "consolidate", "total"]
     assert len(state.rows) == 18
@@ -32,6 +32,20 @@ def test_flow_runs_three_agents_in_order(fake_corpus):
 
 
 def test_failure_is_recorded_and_does_not_stop_the_run(fake_corpus):
-    broken, ok = pipeline.run(["BROKEN-1", "TEST-1"])
+    broken, ok = pipeline.run(["BROKEN-1", "TEST-1"], mode="rules")
     assert broken.error.startswith("scan: FileNotFoundError")
     assert ok.error is None
+
+
+def test_hybrid_sends_only_unresolved_fields_to_the_llm(fake_corpus, monkeypatch):
+    asked = []
+
+    def fake_extract_with_llm(doc, field_ids, model):
+        asked.extend(field_ids)
+        return {}, []
+
+    monkeypatch.setattr(pipeline, "extract_with_llm", fake_extract_with_llm)
+    [state] = pipeline.run(["TEST-1"], mode="hybrid")
+    assert state.error is None
+    assert "L1" not in asked and "P4" not in asked      # solved by the rules
+    assert "T2" in asked and len(asked) == 16
